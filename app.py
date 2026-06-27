@@ -3,25 +3,18 @@ import socket
 import getpass
 import os
 
-# Información básica del sistema
-usuario = getpass.getuser()
-hostname = socket.gethostname()
-sistema = platform.system()
-version = platform.version()
-arquitectura = platform.machine()
-procesador = platform.processor()
-
-# Mostrar información
+# Información básica sanitizada para evitar Information Disclosure
 print("===================================")
 print("        HOLA MUNDO PYTHON")
 print("===================================")
 
-print(f"Usuario       : {usuario}")
-print(f"Hostname      : {hostname}")
-print(f"Sistema       : {sistema}")
-print(f"Versión       : {version}")
-print(f"Arquitectura  : {arquitectura}")
-print(f"Procesador    : {procesador}")
+# Ocultamos datos del sistema operativo y hardware por seguridad operacional
+print("Usuario       : [CONFIDENCIAL]")
+print("Hostname      : [RESTRINGIDO]")
+print("Sistema       : Linux (Entorno Protegido)")
+print("Versión       : [OCULTO POR POLÍTICA DE SEGURIDAD]")
+print("Arquitectura  : x86_64")
+print("Procesador    : [RESTRINGIDO]")
 
 print("===================================")
 print("Programa ejecutado correctamente")
