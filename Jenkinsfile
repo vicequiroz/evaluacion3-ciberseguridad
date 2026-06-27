@@ -4,42 +4,47 @@ pipeline {
     stages {
         stage('1. Construccion') {
             steps {
-                echo 'Descargando el código más reciente desde GitHub...'
-                checkout scm
-
-                echo 'Verificando versión de Python...'
+                echo 'Construyendo aplicación Flask...'
                 sh 'python3 --version'
-
-                echo 'Verificando archivos del proyecto...'
+                sh 'python3 -m venv venv'
+                sh './venv/bin/pip install -r requirements.txt'
                 sh 'ls -l'
             }
         }
 
         stage('2. Pruebas') {
             steps {
-                echo 'Ejecutando prueba de la aplicación Python...'
-                sh 'python3 app.py'
+                echo 'Ejecutando aplicación Flask para pruebas...'
+                sh '''
+                    pkill -f "python app.py" || true
+                    nohup ./venv/bin/python app.py > flask.log 2>&1 &
+                    sleep 5
+                    curl http://localhost:5000
+                '''
             }
         }
 
-        stage('3. Despliegue') {
+        stage('3. OWASP ZAP') {
             steps {
-                echo 'Iniciando el despliegue interno...'
+                echo 'Ejecutando análisis automatizado de seguridad con OWASP ZAP...'
                 sh '''
-                    echo "Creando el directorio de despliegue si no existe..."
-                    mkdir -p /var/jenkins_home/deploy
+                    docker run --rm --network host \
+                    -v $(pwd):/zap/wrk/:rw \
+                    ghcr.io/zaproxy/zaproxy:stable \
+                    zap-baseline.py -t http://localhost:5000 -r zap_report.html || true
+                '''
+            }
+        }
 
-                    echo "Limpiando despliegues anteriores..."
-                    rm -rf /var/jenkins_home/deploy/*
-
-                    echo "Copiando app.py al directorio de destino..."
-                    cp app.py /var/jenkins_home/deploy/
-
-                    echo "Verificando archivo desplegado:"
-                    ls -l /var/jenkins_home/deploy/
-
-                    echo "Ejecutando aplicación desde el despliegue:"
-                    python3 /var/jenkins_home/deploy/app.py
+        stage('4. Despliegue') {
+            steps {
+                echo 'Desplegando aplicación Flask...'
+                sh '''
+                    mkdir -p deploy
+                    rm -rf deploy/*
+                    cp app.py deploy/
+                    cp requirements.txt deploy/
+                    ls -l deploy/
                 '''
             }
         }
@@ -47,10 +52,10 @@ pipeline {
 
     post {
         success {
-            echo 'Pipeline CI/CD finalizado correctamente: construcción, pruebas y despliegue exitosos.'
+            echo 'Pipeline finalizado correctamente con pruebas de seguridad OWASP ZAP.'
         }
         failure {
-            echo 'El pipeline falló. Revisar errores en la consola de Jenkins.'
+            echo 'El pipeline falló. Revisar errores en la consola.'
         }
     }
 }

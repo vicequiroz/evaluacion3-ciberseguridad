@@ -1,21 +1,20 @@
-import platform
-import socket
-import getpass
-import os
+from flask import Flask
 
-# Información básica sanitizada para evitar Information Disclosure
-print("===================================")
-print("        HOLA MUNDO PYTHON")
-print("===================================")
+app = Flask(__name__)
 
-# Ocultamos datos del sistema operativo y hardware por seguridad operacional
-print("Usuario       : [CONFIDENCIAL]")
-print("Hostname      : [RESTRINGIDO]")
-print("Sistema       : Linux (Entorno Protegido)")
-print("Versión       : [OCULTO POR POLÍTICA DE SEGURIDAD]")
-print("Arquitectura  : x86_64")
-print("Procesador    : [RESTRINGIDO]")
+@app.route("/")
+def home():
+    return """
+    <html>
+        <head>
+            <title>Evaluacion 3</title>
+        </head>
+        <body>
+            <h1>Hola Mundo con Flask</h1>
+            <p>Aplicacion web para pruebas automatizadas de seguridad con OWASP ZAP.</p>
+        </body>
+    </html>
+    """
 
-print("===================================")
-print("Programa ejecutado correctamente")
-print("===================================")
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000)
